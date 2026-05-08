@@ -1,21 +1,34 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-[#1e1e1e] py-6 px-4">
-      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p className="font-mono text-xs text-[#444]">
+    <footer style={{
+      borderTop: "1px solid var(--border-subtle)",
+      padding: "20px 24px",
+    }}>
+      <div style={{
+        maxWidth: "1000px",
+        margin: "0 auto",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "12px",
+        flexWrap: "wrap",
+      }}>
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px", color: "var(--text-muted)" }}>
           © {new Date().getFullYear()} fontina — built by{" "}
           <a
             href="https://mahtamunhoquefahim.pages.dev"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#666] hover:text-[#00e676] transition-colors"
+            style={{ color: "var(--text-secondary)", textDecoration: "none", transition: "color 0.15s" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "var(--accent)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "var(--text-secondary)")}
           >
             MAHTAMUN
           </a>
         </p>
-        <p className="font-mono text-xs text-[#444]">
-          Powered by{" "}
-          <span className="text-[#666]">fonttools</span> · No file storage
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px", color: "var(--text-muted)" }}>
+          Powered by <span style={{ color: "var(--text-secondary)" }}>fonttools</span> · No file storage
         </p>
       </div>
     </footer>

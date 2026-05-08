@@ -22,120 +22,234 @@ function getExt(name: string): string {
   return name.split(".").pop()?.toUpperCase() || "FONT";
 }
 
-export default function ConversionQueue({
-  files,
-  onRemove,
-  onClear,
-  onConvertAll,
-  onRetry,
-  hasQueued,
-  allDone,
-}: Props) {
+const btn = {
+  primary: {
+    base: {
+      fontFamily: "'DM Mono', monospace",
+      fontSize: "12px",
+      fontWeight: 500,
+      padding: "6px 14px",
+      borderRadius: "8px",
+      background: "var(--accent)",
+      color: "#080808",
+      border: "none",
+      cursor: "pointer",
+      letterSpacing: "0.01em",
+      transition: "opacity 0.15s",
+    } as React.CSSProperties,
+  },
+  ghost: {
+    base: {
+      fontFamily: "'DM Mono', monospace",
+      fontSize: "12px",
+      fontWeight: 400,
+      padding: "6px 14px",
+      borderRadius: "8px",
+      background: "transparent",
+      color: "var(--text-secondary)",
+      border: "1px solid var(--border)",
+      cursor: "pointer",
+      transition: "color 0.15s, border-color 0.15s",
+    } as React.CSSProperties,
+  },
+};
+
+export default function ConversionQueue({ files, onRemove, onClear, onConvertAll, onRetry, hasQueued, allDone }: Props) {
   const downloadAll = () => {
-    files
-      .filter((f) => f.status === "done" && f.downloadUrl)
-      .forEach((f) => {
-        const a = document.createElement("a");
-        a.href = f.downloadUrl!;
-        a.download = f.outputName!;
-        a.click();
-      });
+    files.filter((f) => f.status === "done" && f.downloadUrl).forEach((f) => {
+      const a = document.createElement("a");
+      a.href = f.downloadUrl!;
+      a.download = f.outputName!;
+      a.click();
+    });
   };
 
+  const done = files.filter(f => f.status === "done").length;
+  const errors = files.filter(f => f.status === "error").length;
+  const converting = files.filter(f => f.status === "converting").length;
+
   return (
-    <div className="bg-[#111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
-      {/* Queue header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e1e1e]">
-        <div className="flex items-center gap-2">
-          <span className="font-syne font-semibold text-white text-sm">
-            {files.length} font{files.length !== 1 ? "s" : ""}
+    <div style={{
+      background: "var(--surface)",
+      border: "1px solid var(--border)",
+      borderRadius: "14px",
+      overflow: "hidden",
+    }}>
+      {/* Header */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "14px 18px",
+        borderBottom: "1px solid var(--border-subtle)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ fontFamily: "DM Sans", fontWeight: 500, fontSize: "13px", color: "var(--text)" }}>
+            {files.length} {files.length === 1 ? "font" : "fonts"}
           </span>
-          <StatusBadge files={files} />
+          {converting > 0 && <StatusPill label="converting…" color="accent" />}
+          {!converting && allDone && <StatusPill label="all done" color="accent" icon={<CheckIcon />} />}
+          {!converting && errors > 0 && <StatusPill label={`${errors} error${errors > 1 ? "s" : ""}`} color="red" />}
+          {!converting && !allDone && done > 0 && <StatusPill label={`${done} / ${files.length}`} color="dim" />}
         </div>
-        <div className="flex items-center gap-2">
+
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {allDone && (
-            <button
-              onClick={downloadAll}
-              className="text-xs font-mono px-3 py-1.5 rounded-lg bg-[#00e676] text-[#0a0a0a] font-semibold hover:bg-[#00c853] transition-colors"
-            >
+            <button onClick={downloadAll} style={btn.primary.base}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
               Download all
             </button>
           )}
           {hasQueued && (
-            <button
-              onClick={onConvertAll}
-              className="text-xs font-mono px-3 py-1.5 rounded-lg bg-[#00e676] text-[#0a0a0a] font-semibold hover:bg-[#00c853] transition-colors"
-            >
+            <button onClick={onConvertAll} style={btn.primary.base}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
               Convert all
             </button>
           )}
-          <button
-            onClick={onClear}
-            className="text-xs font-mono px-3 py-1.5 rounded-lg border border-[#1e1e1e] text-[#666] hover:text-white hover:border-[#666] transition-colors"
-          >
+          <button onClick={onClear} style={btn.ghost.base}
+            onMouseEnter={e => { e.currentTarget.style.color = "var(--text)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--text-secondary)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "var(--text-secondary)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)"; }}>
             Clear
           </button>
         </div>
       </div>
 
-      {/* File list */}
-      <div className="divide-y divide-[#1e1e1e] max-h-[420px] overflow-y-auto">
-        {files.map((f) => (
-          <FileRow key={f.id} file={f} onRemove={onRemove} onRetry={onRetry} />
+      {/* List */}
+      <div style={{ maxHeight: "380px", overflowY: "auto" }}>
+        {files.map((f, i) => (
+          <FileRow
+            key={f.id}
+            file={f}
+            onRemove={onRemove}
+            onRetry={onRetry}
+            isLast={i === files.length - 1}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function FileRow({
-  file,
-  onRemove,
-  onRetry,
-}: {
+function FileRow({ file, onRemove, onRetry, isLast }: {
   file: FontFile;
   onRemove: (id: string) => void;
   onRetry: (id: string) => void;
+  isLast: boolean;
 }) {
+  const ext = getExt(file.name);
+  const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+
   return (
-    <div className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors">
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      padding: "12px 18px",
+      borderBottom: isLast ? "none" : "1px solid var(--border-subtle)",
+      transition: "background 0.15s",
+    }}
+      onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.01)")}
+      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+    >
       {/* Ext badge */}
-      <div className="w-12 h-12 rounded-lg bg-[#1a1a1a] border border-[#1e1e1e] flex flex-col items-center justify-center flex-shrink-0">
-        <span className="font-mono text-[9px] text-[#666] font-bold leading-none">
-          {getExt(file.name)}
+      <div style={{
+        flexShrink: 0,
+        width: "44px",
+        height: "44px",
+        borderRadius: "10px",
+        background: "var(--surface-2)",
+        border: "1px solid var(--border)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "1px",
+      }}>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", color: "var(--text-secondary)", fontWeight: 500, letterSpacing: "0.05em" }}>
+          {ext}
         </span>
-        <span className="font-mono text-[8px] text-[#00e676] leading-none mt-0.5">→W2</span>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "7px", color: "var(--accent)", letterSpacing: "0.05em" }}>
+          →W2
+        </span>
       </div>
 
       {/* Name + size */}
-      <div className="flex-1 min-w-0">
-        <p className="font-mono text-sm text-white truncate">{file.name}</p>
-        <p className="text-xs text-[#666] mt-0.5">{formatSize(file.size)}</p>
-        {file.status === "error" && (
-          <p className="text-xs text-red-400 mt-0.5">{file.error}</p>
-        )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          fontFamily: "'DM Mono', monospace",
+          fontSize: "13px",
+          color: "var(--text)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}>
+          {nameWithoutExt}
+          <span style={{ color: "var(--text-secondary)" }}>.{ext.toLowerCase()}</span>
+        </p>
+        <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+          {formatSize(file.size)}
+          {file.status === "error" && (
+            <span style={{ color: "var(--red)", marginLeft: "6px" }}>{file.error}</span>
+          )}
+        </p>
       </div>
 
-      {/* Status / actions */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      {/* Status */}
+      <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: "8px" }}>
         {file.status === "queued" && (
-          <span className="text-[10px] font-mono text-[#666] border border-[#1e1e1e] px-2 py-1 rounded-md">
+          <span style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "10px",
+            color: "var(--text-muted)",
+            border: "1px solid var(--border)",
+            padding: "3px 8px",
+            borderRadius: "6px",
+            letterSpacing: "0.03em",
+          }}>
             queued
           </span>
         )}
 
         {file.status === "converting" && (
-          <div className="flex items-center gap-1.5 text-[#00e676]">
-            <Spinner />
-            <span className="text-xs font-mono">converting</span>
-          </div>
+          <span style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "10px",
+            color: "var(--accent)",
+          }}>
+            <span className="animate-spin-icon" style={{ display: "block" }}><SpinnerIcon /></span>
+            converting
+          </span>
         )}
 
         {file.status === "done" && file.downloadUrl && (
           <a
             href={file.downloadUrl}
             download={file.outputName}
-            className="flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-lg bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/20 hover:bg-[#00e676]/20 transition-colors"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontFamily: "'DM Mono', monospace",
+              fontSize: "11px",
+              color: "var(--accent)",
+              background: "var(--accent-dim)",
+              border: "1px solid var(--accent-border)",
+              padding: "5px 10px",
+              borderRadius: "8px",
+              textDecoration: "none",
+              transition: "background 0.15s",
+              whiteSpace: "nowrap",
+              maxWidth: "160px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,230,118,0.12)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "var(--accent-dim)")}
           >
             <DownloadIcon />
             {file.outputName}
@@ -145,7 +259,19 @@ function FileRow({
         {file.status === "error" && (
           <button
             onClick={() => onRetry(file.id)}
-            className="text-xs font-mono px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+            style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: "10px",
+              color: "var(--red)",
+              background: "rgba(255,68,68,0.06)",
+              border: "1px solid rgba(255,68,68,0.2)",
+              padding: "5px 10px",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,68,68,0.12)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,68,68,0.06)")}
           >
             Retry
           </button>
@@ -153,72 +279,67 @@ function FileRow({
 
         <button
           onClick={() => onRemove(file.id)}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-[#666] hover:text-white hover:bg-[#1e1e1e] transition-colors"
+          style={{
+            width: "26px",
+            height: "26px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "6px",
+            background: "transparent",
+            border: "none",
+            color: "var(--text-muted)",
+            cursor: "pointer",
+            transition: "color 0.15s, background 0.15s",
+            fontSize: "16px",
+            lineHeight: 1,
+          }}
+          onMouseEnter={e => { (e.currentTarget.style.color = "var(--text)"); (e.currentTarget.style.background = "var(--surface-2)"); }}
+          onMouseLeave={e => { (e.currentTarget.style.color = "var(--text-muted)"); (e.currentTarget.style.background = "transparent"); }}
         >
-          ×
+          <CloseIcon />
         </button>
       </div>
     </div>
   );
 }
 
-function StatusBadge({ files }: { files: FontFile[] }) {
-  const done = files.filter((f) => f.status === "done").length;
-  const errors = files.filter((f) => f.status === "error").length;
-  const converting = files.filter((f) => f.status === "converting").length;
-
-  if (converting > 0)
-    return (
-      <span className="text-[10px] font-mono text-[#00e676] bg-[#00e676]/10 border border-[#00e676]/20 px-2 py-0.5 rounded-full">
-        converting…
-      </span>
-    );
-  if (done === files.length)
-    return (
-      <span className="text-[10px] font-mono text-[#00e676] bg-[#00e676]/10 border border-[#00e676]/20 px-2 py-0.5 rounded-full">
-        all done ✓
-      </span>
-    );
-  if (errors > 0)
-    return (
-      <span className="text-[10px] font-mono text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full">
-        {errors} error{errors !== 1 ? "s" : ""}
-      </span>
-    );
-  return null;
-}
-
-function Spinner() {
+function StatusPill({ label, color, icon }: { label: string; color: "accent" | "red" | "dim"; icon?: React.ReactNode }) {
+  const colors = {
+    accent: { color: "var(--accent)", bg: "var(--accent-dim)", border: "var(--accent-border)" },
+    red:    { color: "var(--red)",    bg: "rgba(255,68,68,0.06)", border: "rgba(255,68,68,0.2)" },
+    dim:    { color: "var(--text-secondary)", bg: "transparent", border: "var(--border)" },
+  };
+  const c = colors[color];
   return (
-    <svg
-      className="animate-spin"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-    >
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-    </svg>
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "4px",
+      fontFamily: "'DM Mono', monospace",
+      fontSize: "10px",
+      letterSpacing: "0.03em",
+      color: c.color,
+      background: c.bg,
+      border: `1px solid ${c.border}`,
+      padding: "2px 8px",
+      borderRadius: "100px",
+    }}>
+      {icon}
+      {label}
+    </span>
   );
 }
 
+function SpinnerIcon() {
+  return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>;
+}
 function DownloadIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  );
+  return <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+}
+function CheckIcon() {
+  return <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+}
+function CloseIcon() {
+  return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 }
