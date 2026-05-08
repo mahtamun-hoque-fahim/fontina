@@ -80,7 +80,7 @@ export default function HomePage() {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)", position: "relative" }}>
       {/* Grid background */}
       <div className="grid-bg" style={{
-        position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none"
+        position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6
       }} />
 
       {/* Glow orb */}
@@ -104,7 +104,7 @@ export default function HomePage() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          padding: "64px 16px 80px",
+          padding: "80px 16px 80px",
           gap: "48px",
         }}>
           {/* Hero */}
