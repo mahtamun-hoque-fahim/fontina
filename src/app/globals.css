@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #00e676;
+  --color-bg: #0a0a0a;
+  --color-surface: #111111;
+  --color-border: #1e1e1e;
+  --color-muted: #666666;
+}
+
+:root {
+  --font-syne: "Syne", system-ui, sans-serif;
+  --font-onest: "Onest", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: #0a0a0a;
+  color: #ffffff;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-onest);
+  background: #0a0a0a;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #00e676; }
+
+/* Drop zone animation */
+@keyframes border-dance {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.drop-zone-active {
+  background: linear-gradient(90deg, #00e676 0%, #00bcd4 50%, #00e676 100%);
+  background-size: 200% 200%;
+  animation: border-dance 2s linear infinite;
+}
