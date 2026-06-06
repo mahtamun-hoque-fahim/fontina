@@ -17,7 +17,7 @@ export default function Footer() {
         <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px", color: "var(--text-muted)" }}>
           © {new Date().getFullYear()} fontina — built by{" "}
           <a
-            href="https://mahtamunhoquefahim.pages.dev"
+            href="https://mahtamunhoquefahim.vercel.app"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "var(--text-secondary)", textDecoration: "none", transition: "color 0.15s" }}
